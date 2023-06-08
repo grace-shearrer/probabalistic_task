@@ -11,42 +11,53 @@ import socket
 from psychopy import core, data, event, gui, misc, visual, prefs, monitors
 from itertools import count, takewhile
 from typing import Iterator
-from bleak import BleakClient, BleakScanner
-from bleak.backends.characteristic import BleakGATTCharacteristic
-from bleak.backends.device import BLEDevice
-from bleak.backends.scanner import AdvertisementData
+#from bleak import BleakClient, BleakScanner
+#from bleak.backends.characteristic import BleakGATTCharacteristic
+#from bleak.backends.device import BLEDevice
+#from bleak.backends.scanner import AdvertisementData
 # Set the audio preferences to use PTB first and then import psychopy.sound
 prefs.hardware['audioLib'] = ['PTB','pyo','pygame','sounddevice']
 from psychopy import sound
-import psychopy_sounddevice
+#import psychopy_sounddevice
 import SerialHandler
-import keyboard
+#import keyboard
+from psychopy.hardware import keyboard
 
+import serial
 
 # Set variables for paths we will be using, as well as other useful default_valuesrmation
 CWD = os.getcwd()
-RESOURCE_PATH = (CWD + r"\Resources")
+#RESOURCE_PATH = (CWD + r"\Resources")
 #RESOURCE_PATH = (CWD + r"\Resources")
 DATA_PATH = os.path.join(CWD, "Datapath")
 HOST_NAME = socket.gethostname()
 TEST_MONITOR = "testMonitor"
 #logging.console.setLevel(logging.DEBUG)
 
+
 # Control keys
 LEFT_KEY = '1'
 RIGHT_KEY = '4'
 QUIT_KEY = 'q'
+
 # Test Keys
 SIMULATE_CORRECT = "c"
 SIMULATE_INCORRECT = "v"
 START_MOTOR = "b"
 STOP_MOTOR = "n"
+
 # Timestamp Variables
 dispense_time = None
 taken_time = None
+
 # Creates the Datapath folder if it does not exist
 if not os.path.exists(DATA_PATH):
     os.makedirs(DATA_PATH)
+
+images = {
+'A':'Stims/1.bmp', 'B':'Stims/2.bmp', 'C':'Stims/3.bmp', 'D': 'Stims/4.bmp', 'E':'Stims/5.bmp', 'F':'Stims/6.bmp','reward':'reward.png','no_reward':'zero.png'
+}
+
 
 # Variables from the original project, need to figure out what everything actually does
 num_disdaqs = 5 # Not sure what this is yet
@@ -127,16 +138,18 @@ if len(sys.argv) == 2 and sys.argv[1] == 'debug':
         debug();
 
 
-if default_values['Bluetooth'] == False:
-    
-    SerialHandler.connect_serial(default_values['Com Port'],baud)
-    SerialHandler.command_to_send(SerialHandler.establishConnection)    
+#if default_values['Bluetooth'] == False:
+#    
+#    SerialHandler.connect_serial(default_values['Com Port'],baud)
+#    SerialHandler.command_to_send(SerialHandler.establishConnection)    
+kb = keyboard.Keyboard()
+keys = kb.getKeys()
 
 if default_values['Test']:
     while SerialHandler.reading_serial:
-        if keyboard.read_key() == "d":
+        if kb.getKeys() == "d":
             SerialHandler.command_to_send(SerialHandler.moveMotor)
-        if keyboard.read_key() == "x":
+        if kb.getKeys() == "x":
             SerialHandler.reading_serial = False
 
 ##END OF CHANGES 
