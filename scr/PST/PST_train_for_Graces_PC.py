@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from psychopy import core, data, event, gui, misc, sound, visual
 import serial
-from PST_functions import check_rand, show_resp, show_fdbk, set_visuals, show_fix, stimulating, make_it, block_it, stim_mapping, intro, starter
+from PST_functions import check_rand, show_resp, show_fdbk, set_visuals, show_fix, stimulating, make_it, block_it, stim_mapping, intro, starter, present_stims
 from PST_setup import *
 
 # don't forget to check the port in device manager (associated with cp210 driver)
@@ -222,53 +222,70 @@ for block_num, block in enumerate(range(num_blocks)):
         #Reset the RT clock. 
 
         RT.reset()
+        present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT)
 
         #Set-up desired trial dur (excluding ITI).
 
-        targ_trial_dur = stim_dur + (isi_dur * refresh)/1000 + fdbk_dur
+#        targ_trial_dur = stim_dur + (isi_dur * refresh)/1000 + fdbk_dur
 
         #Draw the stims and handle keyboard input.
         
-        object_onset = fMRI_clock.getTime()
-        while stim_frameN < int(floor(3000/refresh)):
-            response = 'false'
-            left_stim.draw()
-            right_stim.draw()
-            fix.draw()
-            win.flip()
-            allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+#        object_onset = fMRI_clock.getTime()
+# New non-fMRI
+#        while advance == 'false':
+#        left_stim.draw()
+#        right_stim.draw()
+#        win.flip()
+#        k = event.waitKeys(keyList = [left_key,right_key,quit_key])
+#                
+#
+##                if k[0] == 'o':
+##                    advance = 'true'
+##
+##                elif k[0] == 'q':
+##                    core.quit()
+#        allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+#        fix.draw()
+#        win.flip()
+#        while stim_frameN < int(floor(3000/refresh)):
+#            response = 'false'
+#            left_stim.draw()
+#            right_stim.draw()
+#            fix.draw()
+#            win.flip()
+#            allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
 
-            if allKeys:
-                resp = allKeys[0][0]
-                trial_RT=allKeys[0][1]
-                #advance_sound.play()
-
-                if resp == quit_key:
-                    core.quit()
-
-                elif resp == left_key:
-                    response = 'left'
-                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-                    isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
-                    object_dur = isi[0] - object_onset
-                    feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-                    act_trial_dur = object_dur + isi[1] + feedback[2]
-                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-                    iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
-                    stim_frameN = int(floor(3000/refresh))
-
-                elif resp == right_key:
-                    response = 'right'
-                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-                    isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
-                    object_dur = isi[0] - object_onset
-                    feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-                    act_trial_dur = object_dur + isi[1] + feedback[2]
-                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-                    iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
-                    stim_frameN = int(floor(3000/refresh))
-            
-            stim_frameN = stim_frameN + 1
+#            if allKeys:
+#                resp = allKeys[0][0]
+#                trial_RT=allKeys[0][1]
+#                #advance_sound.play()
+#
+#                if resp == quit_key:
+#                    core.quit()
+#
+#                elif resp == left_key:
+#                    response = 'left'
+#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+#                    isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    object_dur = isi[0] - object_onset
+#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+#                    act_trial_dur = object_dur + isi[1] + feedback[2]
+#                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
+#                    iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    stim_frameN = int(floor(3000/refresh))
+#
+#                elif resp == right_key:
+#                    response = 'right'
+#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+#                    isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    object_dur = isi[0] - object_onset
+#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+#                    act_trial_dur = object_dur + isi[1] + feedback[2]
+#                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
+#                    iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    stim_frameN = int(floor(3000/refresh))
+#            
+#            stim_frameN = stim_frameN + 1
 
         #Catch trials with no response.
 

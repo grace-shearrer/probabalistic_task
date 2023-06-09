@@ -9,6 +9,43 @@ from psychopy import core, data, event, gui, misc, sound, visual
 import serial
 import pdb 
 
+def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT):
+    from psychopy import event
+    left_stim.draw()
+    right_stim.draw()
+    win.flip()
+    k = event.waitKeys(keyList = [left_key,right_key,quit_key])
+    allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+    fix.draw()
+    win.flip()
+    allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+    if allKeys:
+        resp = allKeys[0][0]
+        trial_RT=allKeys[0][1]
+
+        if resp == quit_key:
+            core.quit()
+        elif resp == left_key:
+            response = 'left'
+            trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+            isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+            object_dur = isi[0] - object_onset
+            feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+#            act_trial_dur = object_dur + isi[1] + feedback[2]
+#            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
+#            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+#            stim_frameN = int(floor(3000/refresh))
+
+        elif resp == right_key:
+            response = 'right'
+            trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+            isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+            object_dur = isi[0] - object_onset
+            feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+#            act_trial_dur = object_dur + isi[1] + feedback[2]
+#            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
+#            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+#            stim_frameN = int(floor(3000/refresh))
 
 
 def starter(small_blocks, stim_rand, win):
