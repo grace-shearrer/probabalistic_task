@@ -7,6 +7,9 @@ import numpy as np
 import pandas as pd
 from psychopy import core, data, event, gui, misc, sound, visual
 import serial
+import pdb 
+
+
 
 def starter(small_blocks, stim_rand, win):
     from psychopy import visual
@@ -22,7 +25,7 @@ def starter(small_blocks, stim_rand, win):
     rightStims = []
     right_stim_numbers = []
     sch_outcome = []
-    for x in range(len(small_blocks)):
+    for x in range(20):
         for y in range(3):
             leftStims.append(AllTrials[x,y,0])
             rightStims.append(AllTrials[x,y,1])
@@ -30,24 +33,34 @@ def starter(small_blocks, stim_rand, win):
     left_stim_numbers = leftStims
     right_stim_numbers = rightStims
     
-    leftStims = [stim_rand['stim_A'] if x==1 else stim_rand['stim_C'] if x==2 else stim_rand['stim_E'] if x==3 else stim_rand['stim_F'] if x==4 else stim_rand['stim_D'] if x==5 else stim_rand['stim_B'] if x==6 else x for x in leftStims]
-    rightStims = [stim_rand['stim_A'] if x==1 else stim_rand['stim_C'] if x==2 else stim_rand['stim_E'] if x==3 else stim_rand['stim_F'] if x==4 else stim_rand['stim_D'] if x==5 else stim_rand['stim_B']if x==6 else x for x in rightStims]
+    leftStims2 = [stim_rand['stim_A'] if x==1 else stim_rand['stim_C'] if x==2 else stim_rand['stim_E'] if x==3 else stim_rand['stim_F'] if x==4 else stim_rand['stim_D'] if x==5 else stim_rand['stim_B'] if x==6 else x for x in leftStims]
+    rightStims2 = [stim_rand['stim_A'] if x==1 else stim_rand['stim_C'] if x==2 else stim_rand['stim_E'] if x==3 else stim_rand['stim_F'] if x==4 else stim_rand['stim_D'] if x==5 else stim_rand['stim_B']if x==6 else x for x in rightStims]
     
     #Load the stims in a matrix to improve timing/efficiency.
     stim_matrix = {}
-    for i in range(len(leftStims)): 
-        left_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [-0.4,0], image=leftStims[i])
-        left_stim_name = leftStims[i]
+    for i in range(len(leftStims2)): 
+        print(leftStims)
+        print(leftStims2)
+        print(leftStims[i])
+        left_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [-0.4,0], image=leftStims2[i])
+        print('hi1')
+        left_stim_name = leftStims2[i]
+        print('hi2')
         left_stim_number = left_stim_numbers[i]
-        right_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [0.4,0], image=rightStims[i])
-        right_stim_name = rightStims[i]
+        print('hi3')
+        right_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [0.4,0], image=rightStims2[i])
+        print('hi4')
+        right_stim_name = rightStims2[i]
+        print('hi5')
         right_stim_number = right_stim_numbers[i]
+        print('hi6')
         scheduled_outcome = sch_outcome[i] 
+        print('hi7')
         stim_matrix[i] = (left_stim,left_stim_name,left_stim_number,right_stim,right_stim_name,right_stim_number,scheduled_outcome)
     return(stim_matrix)
 
 
-def intro(inst_text, instruct, win, allKeys):
+def intro(inst_text, instruct, win, allKeys, left_key, quit_key):
     for i in range(len(inst_text)):
         advance = 'false'
 
@@ -75,7 +88,7 @@ def stim_mapping(pic_list, datapath, participantID):
     return(stim_rand)
 
 
-def block_it(trialList1, trialList2, trialList3):
+def block_it(AB_trialList, CD_trialList, EF_trialList):
     small_blocks = [[i] for i in range(20)]
     for i in range(20):
         small_blocks[i] = np.vstack([AB_trialList[i],CD_trialList[i],EF_trialList[i]])
@@ -86,7 +99,9 @@ def stimulating(num_stims, trials_per_stim):
     letters = ['A','C','E','F','D','B']
     stim_list = [1 for x in range(num_stims)]
     for count,x in enumerate(range(num_stims)):
+        count = count+1
         stim_list[x] = [count for y in range(trials_per_stim)]
+    print(stim_list)
     stim_names = {}
     for i,x in enumerate(stim_list):
         stim_names[letters[i]] = x

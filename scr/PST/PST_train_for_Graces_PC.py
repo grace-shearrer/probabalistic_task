@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from psychopy import core, data, event, gui, misc, sound, visual
 import serial
-from PST_functions import check_rand, show_resp, show_fdbk, set_visuals, show_fix
+from PST_functions import check_rand, show_resp, show_fdbk, set_visuals, show_fix, stimulating, make_it, block_it, stim_mapping, intro, starter
 from PST_setup import *
 
 # don't forget to check the port in device manager (associated with cp210 driver)
@@ -84,7 +84,7 @@ else:
 
 datapath = os.path.join('.','Datapath')
 
-parameters = set_visuals([600,400], False, 'MacAir', 'black', wintype, 'Text', 'center', 0.12, 350, 'white', 0.3)
+parameters = set_visuals([600,400], False, 'MacAir', 'black', wintype, 'Text', 'center', 0.12, 350, 'white', 0.3, stimpath)
 #Global_variables
 win = parameters['win']
 instruct = parameters['instruct']
@@ -121,16 +121,17 @@ fix_duration = 1
 num_blocks = 4
 num_stims = 6
 trials_per_stim = 10 # Number times stim on left out of 20 trials.
+total_trials = trials_per_stim*num_stims
 #Make master list of stim lists.
 
-stim_names = stimulating(num_blocks, trials_by_stim)
+stim_names = stimulating(num_stims, trials_per_stim)
 AB_trialList, CD_trialList, EF_trialList = make_it(stim_names)
 small_blocks = block_it(AB_trialList, CD_trialList, EF_trialList)
 
 #Shuffle bitmaps so images used as stims A, B, C, etc. vary across subjects.
 pic_list = [os.path.join(stimpath,'1.bmp'), os.path.join(stimpath,'2.bmp'), os.path.join(stimpath,'3.bmp'), os.path.join(stimpath,'4.bmp'), os.path.join(stimpath,'5.bmp'), os.path.join(stimpath,'6.bmp')]
 
-stim_rand = stim_mapping(pic_list, datapath, info['participant])
+stim_rand = stim_mapping(pic_list, datapath, info['participant'])
 
 #stim_A = pic_list[0]
 #stim_C = pic_list[1]
@@ -162,14 +163,14 @@ inst_text = [
 allKeys = []
 
 # Introduction    
-intro(inst_text, instruct, win, allKeys)
+intro(inst_text, instruct, win, allKeys, left_key, quit_key)
 
 #Run experimental trials.
 for block_num, block in enumerate(range(num_blocks)):    
     #Check-in before starting scan.
     #stim_matrix[i] = (left_stim,left_stim_name,left_stim_number,right_stim,right_stim_name,right_stim_number,scheduled_outcome)
  
-    stim_matrix = starter(small_blocks)
+    stim_matrix = starter(small_blocks, stim_rand, win)
     last_text = ['Ready to begin, press o when you are comfortable']
 
     advance = 'false'
@@ -191,7 +192,7 @@ for block_num, block in enumerate(range(num_blocks)):
     
     #Run through the trials.
 
-    for i in range(len(leftStims)):
+    for i in range(total_trials):
 
         trial_num = i + 1
 
@@ -215,8 +216,8 @@ for block_num, block in enumerate(range(num_blocks)):
 
         #Set ISI/ITI durs.
 
-        isi_dur = isi_list[i]
-        iti_dur = iti_list[i]
+#        isi_dur = isi_list[i]
+#        iti_dur = iti_list[i]
 
         #Reset the RT clock. 
 
