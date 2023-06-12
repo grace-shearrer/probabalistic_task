@@ -510,7 +510,7 @@ for block in range(num_blocks):
     left_stim_numbers = leftStims
     right_stim_numbers = rightStims
 
-    leftStims = [stim_A if x==1 else stim_C if x==2 else stim_E if x==3 else stim_F if x==4 else stim_D if x==5 else stim_B if x==6 else x for x in leftStims]
+    leftStims2 = [stim_A if x==1 else stim_C if x==2 else stim_E if x==3 else stim_F if x==4 else stim_D if x==5 else stim_B if x==6 else x for x in leftStims]
 
     rightStims = [stim_A if x==1 else stim_C if x==2 else stim_E if x==3 else stim_F if x==4 else stim_D if x==5 else stim_B if x==6 else x for x in rightStims]
 

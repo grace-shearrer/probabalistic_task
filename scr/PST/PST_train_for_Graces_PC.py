@@ -145,7 +145,7 @@ stim_rand = stim_mapping(pic_list, datapath, info['participant'])
 #Clocks.
 
 RT = core.Clock()
-fMRI_clock = core.Clock()
+task_clock = core.Clock()
 
 #File to collect training data. 
 
@@ -222,7 +222,7 @@ for block_num, block in enumerate(range(num_blocks)):
         #Reset the RT clock. 
 
         RT.reset()
-        present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT)
+        present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock)
 
         #Set-up desired trial dur (excluding ITI).
 
@@ -230,20 +230,7 @@ for block_num, block in enumerate(range(num_blocks)):
 
         #Draw the stims and handle keyboard input.
         
-#        object_onset = fMRI_clock.getTime()
-# New non-fMRI
-#        while advance == 'false':
-#        left_stim.draw()
-#        right_stim.draw()
-#        win.flip()
-#        k = event.waitKeys(keyList = [left_key,right_key,quit_key])
-#                
-#
-##                if k[0] == 'o':
-##                    advance = 'true'
-##
-##                elif k[0] == 'q':
-##                    core.quit()
+#        object_onset = task_clock.getTime()
 #        allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
 #        fix.draw()
 #        win.flip()
@@ -265,24 +252,24 @@ for block_num, block in enumerate(range(num_blocks)):
 #
 #                elif resp == left_key:
 #                    response = 'left'
-#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-#                    isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+#                    isi = show_fix(isi_dur,task_clock.getTime(),refresh, fix, win)
 #                    object_dur = isi[0] - object_onset
-#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
 #                    act_trial_dur = object_dur + isi[1] + feedback[2]
 #                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-#                    iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    iti = show_fix(iti_dur,task_clock.getTime(),refresh, fix, win)
 #                    stim_frameN = int(floor(3000/refresh))
 #
 #                elif resp == right_key:
 #                    response = 'right'
-#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,fMRI_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-#                    isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+#                    isi = show_fix(isi_dur,task_clock.getTime(),refresh, fix, win)
 #                    object_dur = isi[0] - object_onset
-#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
 #                    act_trial_dur = object_dur + isi[1] + feedback[2]
 #                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-#                    iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+#                    iti = show_fix(iti_dur,task_clock.getTime(),refresh, fix, win)
 #                    stim_frameN = int(floor(3000/refresh))
 #            
 #            stim_frameN = stim_frameN + 1
@@ -293,22 +280,22 @@ for block_num, block in enumerate(range(num_blocks)):
             response = 'No_response'
             trial_RT = 999
             accuracy = 999
-            isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+            isi = show_fix(isi_dur,task_clock.getTime(),refresh, fix, win)
             object_dur = isi[0] - object_onset
             trial_response = (999,999.0)
-            feedback = show_fdbk(accuracy,scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+            feedback = show_fdbk(accuracy,scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
             act_trial_dur = object_dur + isi[1] + feedback[2]
             iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+            iti = show_fix(iti_dur,task_clock.getTime(),refresh, fix, win)
 
         #Write out the data.
 
-        trainFile.write('%i,%i,%s,%i,%s,%i,%0.3f,%0.3f,%s,%0.3f,%0.3f,%i,%0.3f,%0.3f,%i,%s,%0.3f,%0.3f,%0.3f,%0.3f\n' %(block_num, trial_num, left_stim_name, left_stim_number, right_stim_name, right_stim_number, object_onset, object_dur, response, trial_response[1], trial_RT, trial_response[0], isi[0], isi[1], scheduled_outcome, feedback[0], feedback[1], feedback[2], iti[0], iti[1]))
+#        trainFile.write('%i,%i,%s,%i,%s,%i,%0.3f,%0.3f,%s,%0.3f,%0.3f,%i,%0.3f,%0.3f,%i,%s,%0.3f,%0.3f,%0.3f,%0.3f\n' %(block_num, trial_num, left_stim_name, left_stim_number, right_stim_name, right_stim_number, object_onset, object_dur, response, trial_response[1], trial_RT, trial_response[0], isi[0], isi[1], scheduled_outcome, feedback[0], feedback[1], feedback[2], iti[0], iti[1]))
 
         #Fade out with lastHRF fixation cross after 60 trials.
         
         if trial_num == 60: 
-            elapsed_time = fMRI_clock.getTime()
+            elapsed_time = task_clock.getTime()
             time_left = end_time - elapsed_time
 
             for i in range(int(round((time_left*1000)/refresh))):
