@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from psychopy import core, data, event, gui, misc, sound, visual
 import serial
-from PST_functions import check_rand, show_resp, show_fdbk, set_visuals, show_fix, stimulating, make_it, block_it, stim_mapping, intro, starter, present_stims
+from PST_functions import *
 from PST_setup import *
 
 # don't forget to check the port in device manager (associated with cp210 driver)
@@ -36,10 +36,12 @@ refresh = 16.7
 num_disdaqs = 5 # not sure what this is yet
 
 TR = 3 #Shouldn't need not scanning
-
+# feedback duration
+# Wait for candy to be dispensed
+# Beam break trigger + 5
 initial_waittime = 5
 stim_dur = 3
-fdbk_dur = 1
+fdbk_dur = 5
 disdaq_time = int(15) #15s (5TRs) math.floor rounds to nearest int
 num_trials = 60 #Per block.
 trial_dur = 8 #On average.
@@ -222,9 +224,12 @@ for block_num, block in enumerate(range(num_blocks)):
         #Reset the RT clock. 
 
         RT.reset()
-        present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock)
-
-        #Set-up desired trial dur (excluding ITI).
+        event.clearEvents(eventType='keyboard')
+        key_press = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome)
+#        print(key_press[0])
+        response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock)
+        core.wait(2.0)
+        #Set-up desired trial dur (excluding ITI). 
 
 #        targ_trial_dur = stim_dur + (isi_dur * refresh)/1000 + fdbk_dur
 

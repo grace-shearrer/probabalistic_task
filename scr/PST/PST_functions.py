@@ -9,82 +9,161 @@ from psychopy import core, data, event, gui, misc, sound, visual
 import serial
 import pdb 
 
-def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome, refresh):
+def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome):
     from psychopy import event
     left_stim.draw()
     right_stim.draw()
     win.flip()
-    k = event.waitKeys(keyList = [left_key,right_key,quit_key])
-    allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+    # wait for key press
+    key_press = event.waitKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+    # allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+    print(key_press)
     fix.draw()
     win.flip()
-    allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-    if allKeys:
-        resp = allKeys[0][0]
-        trial_RT=allKeys[0][1]
+    return(key_press)
 
-        if resp == quit_key:
-            core.quit()
-        elif resp == left_key:
-            response = 'left'
-            trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-            # isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
-            # object_dur = isi[0] - object_onset
-            # feedback = show_fdbk(trial_response[0],scheduled_outcome,fMRI_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-#            act_trial_dur = object_dur + isi[1] + feedback[2]
-#            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-#            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
-#            stim_frameN = int(floor(3000/refresh))
+def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_choice, task_clock): 
+    print(key_pressed)   
+    resp_onset = task_clock.getTime()
+    if key_pressed == '1':
+        left_choice.draw()
+        left_stim.draw()
+        right_stim.draw()
+        win.flip()
+        # trial_response = show_resp(key_pressed[0][0],left_choice, right_choice, task_clock)
+       
+        # isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+        # object_dur = isi[0] - object_onset
+        # feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(), no_resp, zero, win, reward, info['test?'])
+        
+    #            act_trial_dur = object_dur + isi[1] + feedback[2]
+    #            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
+    #            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+    #            stim_frameN = int(floor(3000/refresh))
 
-        elif resp == right_key:
-            response = 'right'
-            trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-            # isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
-            # object_dur = isi[0] - object_onset
-            feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-#            act_trial_dur = object_dur + isi[1] + feedback[2]
-#            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-#            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
-#            stim_frameN = int(floor(3000/refresh))
+    elif key_pressed == '4':
+        right_choice.draw()
+        left_stim.draw()
+        right_stim.draw()
+        win.flip()
+        # trial_response = show_resp(key_pressed[0][0],left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
+        # isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
+        # object_dur = isi[0] - object_onset
+        # feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
+    #            act_trial_dur = object_dur + isi[1] + feedback[2]
+    #            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
+    #            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
+    #            stim_frameN = int(floor(3000/refresh))
 
-def show_resp(action,l_stim_num,r_stim_num,frames, left_stim, right_stim, fix, win, left_choice, right_choice):
 
-    # refresh = measured_refresh
-    # resp_onset = start_time
-    
-    if action == 'left':
-        drawing(left_stim, right_stim, fix, left_choice, right_choice, win)
 
-        # while frames < stupid_math(refresh):
-        #     drawing(left_stim, right_stim, fix, left_choice, right_choice, win, frames)
-
-        if l_stim_num < r_stim_num: 
-            accuracy = 1
-            
-        else: 
-            accuracy = 0
-
-    if action == 'right':
-
-        while frames < stupid_math(refresh):
-            drawing(left_stim, right_stim, fix, left_choice, right_choice, win)
-
-        if l_stim_num > r_stim_num: 
-            accuracy = 1
-            
-        else: 
-            accuracy = 0
-
-    return (accuracy, resp_onset)
 
 def drawing(left_stim, right_stim, fix, left_choice, right_choice, win):
     left_stim.draw()
     right_stim.draw()
     fix.draw()
-    left_choice.draw()
-    right_choice.draw()
     win.flip()
-    task_clock.wait(2.0)
+
+def accuracy(l_stim_num , r_stim_num):
+    if l_stim_num < r_stim_num: 
+            accuracy = 1
+            
+    else: 
+        accuracy = 0
+    if l_stim_num > r_stim_num: 
+            accuracy = 1        
+    else: 
+        accuracy = 0
+    return (accuracy)
+
+def show_resp(key_pressed, left_choice, right_choice, task_clock):
+    resp_onset = task_clock.getTime()
+    if key_pressed == '1':
+        left_choice.draw()
+        # win.flip()
+    if key_pressed == '4':
+        right_choice.draw()
+        # win.flip()
+    return(resp_onset)
+    
+
+def show_fdbk(accuracy,sched_out,start_time, no_resp, zero, win, reward, test, task_clock, fdbk_dur):
+
+    # refresh = measured_refresh
+    # fdbk_clock = task_clock.Clock()
+    # fdbk_clock.reset()
+    # fdbk_onset = start_time
+    fdbk_onset = task_clock.getTime()
+
+    if accuracy == 1 and sched_out == 1:
+        reward.draw()
+        core.wait(fdbk_dur)
+        if test == false:
+            ser.write(52)
+        else:
+            print('dispensing candy')
+
+        # for frames in range(stupid_math(refresh)):
+        #     reward.draw()
+        #     if test == False:
+        #         ser.write(52)
+        #     else:
+        #         print('neat')
+            cc=str(ser.readline())
+            ser.write(52)
+            win.flip()
+        
+        # fdbk_dur = fdbk_clock.getTime()
+
+        return ('reward')
+
+    elif accuracy == 1 and sched_out == 0:
+
+        zero.draw()
+        win.flip()
+        core.wait(fdbk_dur)
+        
+        return ('zero')
+
+    elif accuracy == 0 and sched_out == 1:
+        zero.draw()
+        win.flip()
+
+        #incorr_sound.play()
+        # for frames in range(stupid_math(refresh)):
+        #     zero.draw()
+        #     win.flip()
+
+        # fdbk_dur = fdbk_clock.getTime()
+
+        return ('zero',fdbk_onset,fdbk_dur)
+
+    elif accuracy == 0 and sched_out == 0:
+        reward.draw()
+        win.flip()
+        #corr_sound.play()
+        # for frames in range(stupid_math(refresh)):
+        #     reward.draw()
+        #     win.flip()
+
+        # fdbk_dur = fdbk_clock.getTime()
+
+        return ('reward')
+
+    elif accuracy == 999:
+        no_resp.draw()
+        win.flip()
+
+        # for frames in range(stupid_math(refresh)):
+        #     no_resp.draw()
+        #     win.flip()
+
+        # fdbk_dur = fdbk_clock.getTime()
+
+        return ('no_response')
+
+
+
  
 
 def starter(small_blocks, stim_rand, win):
@@ -115,23 +194,23 @@ def starter(small_blocks, stim_rand, win):
     #Load the stims in a matrix to improve timing/efficiency.
     stim_matrix = {}
     for i in range(len(leftStims2)): 
-        print(leftStims)
-        print(leftStims2)
-        print(leftStims[i])
+        # print(leftStims)
+        # print(leftStims2)
+        # print(leftStims[i])
         left_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [-0.4,0], image=leftStims2[i])
-        print('hi1')
+        # print('hi1')
         left_stim_name = leftStims2[i]
-        print('hi2')
+        # print('hi2')
         left_stim_number = left_stim_numbers[i]
-        print('hi3')
+        # print('hi3')
         right_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [0.4,0], image=rightStims2[i])
-        print('hi4')
+        # print('hi4')
         right_stim_name = rightStims2[i]
-        print('hi5')
+        # print('hi5')
         right_stim_number = right_stim_numbers[i]
-        print('hi6')
+        # print('hi6')
         scheduled_outcome = sch_outcome[i] 
-        print('hi7')
+        # print('hi7')
         stim_matrix[i] = (left_stim,left_stim_name,left_stim_number,right_stim,right_stim_name,right_stim_number,scheduled_outcome)
     return(stim_matrix)
 
