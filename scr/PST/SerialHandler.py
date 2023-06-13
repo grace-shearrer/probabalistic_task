@@ -1,7 +1,7 @@
 import serial
 import time
 import threading
-#import keyboard
+import keyboard
 import datetime
 #Command Types
 TRANS_TYPE_COMMAND = 0x7E
@@ -41,21 +41,21 @@ moveMotor = [TRANS_TYPE_COMMAND,DISPENSE_CANDY,MOTOR_ROTATE]
 
 
 def connect_serial(comport,baudrate):
-    global ser;
-    global reading_serial;
+    global ser
+    global reading_serial
     ser = serial.Serial(comport, baudrate, xonxoff = True)
     time.sleep(3)
     thread = threading.Thread(target=read_from_port)
     thread.start()
     print("Connected to serial")
-    reading_serial = True;
-    return ser, reading_serial;
+    reading_serial = True
+    return ser, reading_serial
 
 def command_to_send(command):
     #print("Running Command to Send")
     ser.reset_input_buffer()
     ser.write(command)
-    return True;
+    return True
 
 def read_from_port():
     print("Read from port thread started")
@@ -64,15 +64,20 @@ def read_from_port():
             bytes_read = ser.read(3)
             if bytes_read == b"@es":
                 print("Connection Established")
+                return('connected')
             elif bytes_read == b"@iy":
                 print("Motor Moved")
+                return('motor_moved')
             elif bytes_read == b"%MC":
                 print("Candy Dispensed")
+                return('candy_disp')
                 #dispense_time = datetime.datetime.now()
                 #return dispense_time
             elif bytes_read == b"%TR":
                 print("Candy Taken")
+                return('candy_taken')
                 #taken_time = datetime.datetime.now()
                 #return taken_time
             else:
                 print(bytes_read)
+                return('nada')

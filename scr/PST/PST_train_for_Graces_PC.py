@@ -8,10 +8,25 @@
 #ports differ on different pc-s
 
 import os
-from math import floor
+import math
 import numpy as np
 import pandas as pd
-from psychopy import core, data, event, gui, misc, sound, visual
+import serial
+import sys
+import socket
+from psychopy import core, data, event, gui, misc, visual, prefs, monitors
+from itertools import count, takewhile
+from typing import Iterator
+from bleak import BleakClient, BleakScanner
+from bleak.backends.characteristic import BleakGATTCharacteristic
+from bleak.backends.device import BLEDevice
+from bleak.backends.scanner import AdvertisementData
+# Set the audio preferences to use PTB first and then import psychopy.sound
+prefs.hardware['audioLib'] = ['PTB','pyo','pygame','sounddevice']
+from psychopy import sound
+#import psychopy_sounddevice
+import SerialHandler
+import keyboard as keebee # need to do this to prevent overlap with psychopy keyboard
 import serial
 from PST_functions import *
 from PST_setup import *
@@ -21,6 +36,12 @@ from PST_setup import *
 # ser = serial.Serial('COM4', 9800)
 
 wintype='pyglet' 
+HOST_NAME = socket.gethostname()
+
+# Timestamp Variables
+dispense_time = None
+taken_time = None
+
 
 #Screen refresh duration. Not needed, but good fyi
 refresh = 16.7
@@ -33,29 +54,13 @@ Beam break trigger + 5
 
 
 ##GUI to get subject number, date.
-info = {}
+info = settingsGUI()
 
-info['fullscr'] = False
-info['test?'] = False
-#info['port'] = '/dev/tty.usbserial'
-info['participant'] = 'test'
-info['Bluetooth'] = False
-info['computer']= 'enter computer name here'
-#info['Com_port']
-info['dateStr'] = data.getDateStr()
-#if info['Bluetooth'] == False:
-
-dlg = gui.DlgFromDict(info)
-
-#if dlg.OK:
-#    misc.toFile('PST_fMRI_lastParams.pickle', info) 
-#else:
-#    core.quit()
 
 pk = {}
 pk.update({info['participant']:{
-        'date': info['dateStr'],
-        'fullscr':info['fullscr'], 
+        'date': info['Date'],
+        'fullscr':info['Fullscreen'], 
         'test?':info['test?']
 }})
 
@@ -70,6 +75,17 @@ left_key = '1'
 right_key = '4'
 quit_key = 'q'
 fdbk_dur = 5
+baud = 9600
+
+if info['Bluetooth'] == False:    
+    SerialHandler.connect_serial(info['Com Port'],baud)
+    ready = SerialHandler.command_to_send(SerialHandler.establishConnection)    
+
+if ready == True:
+    print('ready to start')
+else:
+    pk.update({'error':'could not establish connection})
+    clean_quit(datapath, pk, info['participant'], task_clock)
 
 parameters = set_visuals([600,400], False, 'MacAir', 'black', wintype, 'Text', 'center', 0.12, 350, 'white', 0.3, stimpath)
 pk.update({'experiment_parameters':{}})
@@ -106,8 +122,6 @@ stim_rand = stim_mapping(pic_list, datapath, info['participant'])
 
 
 #
-RT = core.Clock()
-task_clock = core.Clock()
 
 
 
@@ -126,17 +140,15 @@ adillyofapickle(datapath, pk, info['participant'])
 
 # Introduction    
 intro(inst_text, instruct, win, allKeys, left_key, quit_key)
+RT = core.Clock()
+task_clock = core.Clock()
+stim_matrix = starter(small_blocks, stim_rand, win)
+last_text = ['Ready to begin, press o when you are comfortable']
+advance = 'false'
+k = ['']
 
 #Run experimental trials.
 for block_num, block in enumerate(range(num_blocks)):    
-    #Check-in 
-    
-    stim_matrix = starter(small_blocks, stim_rand, win)
-    last_text = ['Ready to begin, press o when you are comfortable']
-
-    advance = 'false'
-    k = ['']
-
     while advance == 'false':
         pk.update({'data':{'%i'%block_num:{}
         }
@@ -153,6 +165,7 @@ for block_num, block in enumerate(range(num_blocks)):
             core.quit()
     fix.draw()
     win.flip()
+    
     
     #Run through the trials.
 
@@ -176,25 +189,32 @@ for block_num, block in enumerate(range(num_blocks)):
         #Reset the RT clock and clear events
         RT.reset()
         event.clearEvents(eventType='keyboard')
-        
+        # present the stimuli and wait for key press
         key_press, stim_onset = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome)
+        ## log events in dict for pickle
         pk['data']['%i'%block_num]['%i'%trial_num].append(stim_onset) # stimulus onset
         pk['data']['%i'%block_num]['%i'%trial_num].append(key_press[0][0]) # keypress
         pk['data']['%i'%block_num]['%i'%trial_num].append(key_press[0][1]) # RT
+        # Check accuracy
         acc = accuracy(left_stim_num, right_stim_num, key_press[0][0])
         pk['data']['%i'%block_num]['%i'%trial_num].append(acc) # accuracy
+        # show response for 2 seconds
         response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock, datapath, pk, info['participant'])
         core.wait(2.0)
+        # show feedback and dispense candy here, right now it is waiting 3 sec 
         R, fdbk_onset = show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'])
+        output = SerialHandler.read_from_port() #not sure what the output of this looks like, once I know then I can add it to the core wait time
+        
         pk['data']['%i'%block_num]['%i'%trial_num].append(R) # reward or not
         pk['data']['%i'%block_num]['%i'%trial_num].append(fdbk_onset) # feedback onset
+
         core.wait(3.0)
+        # pickle dump
         adillyofapickle(datapath, pk, info['participant'])
         
+        # check what trial it is
         if trial_num == 60:
             adillyofapickle(datapath, pk, info['participant'])
-
-
 
     #Present a screen between blocks.
 

@@ -21,8 +21,6 @@ from psychopy import sound
 #import psychopy_sounddevice
 import SerialHandler
 #import keyboard
-from psychopy.hardware import keyboard
-
 import serial
 
 # Set variables for paths we will be using, as well as other useful default_valuesrmation
@@ -85,7 +83,7 @@ def settingsGUI():
     default_values = {
         "Participant": "ParticipantName",
         "Date": data.getDateStr(),
-        "Computer": HOST_NAME,
+        # "Computer": HOST_NAME,
         "Com Port": "COM4",
         "Fullscreen": False,
         "Bluetooth": False,
@@ -99,7 +97,7 @@ def settingsGUI():
         tip={
             "Name": "Enter the participant's name",
             "Com Port": "Enter the communication port",
-            "Computer": "Enter the computer name",
+            # "Computer": "Enter the computer name",
             "Date": "Enter the date",
             "Test": "Enter the test name",
             "Participant": "Enter the participant ID",

@@ -85,6 +85,43 @@ pk = {
     }
 }
 '''
+def settingsGUI():
+    print("Showing GUI")
+    # Create a dictionary with default values for all the settings
+    default_values = {
+        "participant": "GIRRL_####",
+        "Date": data.getDateStr(),
+        "Computer": False,
+        "Com Port": "COM4",
+        "Fullscreen": False,
+        "Bluetooth": False,
+        "test?": False,
+    }
+    # Create the GUI dialog
+    dialog = gui.DlgFromDict(
+        dictionary=default_values,
+        title="Settings",
+        order=["participant", "Date", "Computer", "Com Port", "Fullscreen", "Bluetooth", "test?"],
+        tip={
+            "Com Port": "Enter the communication port",
+            "Computer": "Enter the computer name",
+            "Date": "Enter the date",
+            "Test": "Enter the test name",
+            "participant": "Enter the participant ID",
+            "Fullscreen": "Enable/disable fullscreen mode",
+            "Bluetooth": "Enable/disable Bluetooth",
+            "test?": "Enable/disable test mode",
+        },
+    )
+    if dialog.OK:
+        #print("User entered:", default_values)
+        misc.toFile('lastParams.pickle', default_values)
+        return default_values
+
+    else:
+        print("User cancelled the dialog")
+        core.quit()
+
 
 def make_df(dic):
     all_df = []
@@ -169,8 +206,9 @@ def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, X):
     if accuracy == 1 and sched_out == 1:
         reward.draw()
         if X == False:
-            ser.write(52)
-            cc=str(ser.readline())
+            SerialHandler.command_to_send(SerialHandler.moveMotor)     
+            # ser.write(52)
+            # cc=str(ser.readline())
         else:
             print('dispensing candy')
             win.flip()
@@ -185,6 +223,7 @@ def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, X):
         win.flip()
         return ('incorrect',fdbk_onset)
     elif accuracy == 0 and sched_out == 0:
+        SerialHandler.command_to_send(SerialHandler.moveMotor)     
         reward.draw()
         win.flip()
         return ('probabalistic_reward', fdbk_onset)
@@ -284,7 +323,7 @@ def stimulating(num_stims, trials_per_stim):
     for count,x in enumerate(range(num_stims)):
         count = count+1
         stim_list[x] = [count for y in range(trials_per_stim)]
-    # print(stim_list)
+    
     stim_names = {}
     for i,x in enumerate(stim_list):
         stim_names[letters[i]] = x
@@ -318,12 +357,15 @@ def make_it(stim_names):
 
 
 def set_visuals(size, monitor, color, wintype,text, align, ht, wWidth, textcolor, radius):
+    '''
+    Set up all the visuals for the experiment
+    '''
     from psychopy import visual
     win = visual.Window([600,400], fullscr= False, allowGUI = False, monitor = monitor, color = color, winType=wintype) #check window here
     instruct = visual.TextStim(win, text=text, alignHoriz = align, height = ht, wrapWidth = wWidth, color = textcolor)
     fix = visual.TextStim(win, text = '+')
-    left_choice = visual.Circle(win, radius = radius, lineColor = textcolor, lineWidth = 2.0, pos = [-0.4,0])
-    right_choice = visual.Circle(win, radius = radius, lineColor = textcolor, lineWidth = 2.0, pos = [0.4,0])
+    left_choice = visual.Circle(win, radius = radius, lineColor = 'yellow', lineWidth = 2.0, pos = [-0.4,0])
+    right_choice = visual.Circle(win, radius = radius, lineColor = 'yellow', lineWidth = 2.0, pos = [0.4,0])
     parameters = {'win':win, 'instruct':instruct, 'fix':fix, 'left_choice':left_choice, 'right_choice':right_choice}
     return(parameters)
 
