@@ -52,24 +52,22 @@ Wait for candy to be dispensed
 Beam break trigger + 5
 '''
 
-
 ##GUI to get subject number, date.
 info = settingsGUI()
 
-
+# Dictionary for pickle file
 pk = {}
 pk.update({info['participant']:{
         'date': info['Date'],
         'fullscr':info['Fullscreen'], 
         'test?':info['test?']
 }})
-
+# Paths
 stimpath = './Stims/'
 datapath = os.path.join('.','Datapath')
 adillyofapickle(datapath, pk, info['participant'])
 
 # Global_variables
-#    ser = serial.Serial(info['Com_port'], 9600, write_timeout = 3)
 ## Define response keys.
 left_key = '1'
 right_key = '4'
@@ -86,7 +84,7 @@ if ready == True:
 else:
     pk.update({'error':'could not establish connection})
     clean_quit(datapath, pk, info['participant'], task_clock)
-
+# set visual parameters
 parameters = set_visuals([600,400], False, 'MacAir', 'black', wintype, 'Text', 'center', 0.12, 350, 'white', 0.3, stimpath)
 pk.update({'experiment_parameters':{}})
 
@@ -99,6 +97,8 @@ reward = parameters['reward']
 zero = parameters['zero']
 no_resp = parameters['no_resp']
 fix = parameters['fix']
+
+#set number of blocks, stimuli, and trials
 num_blocks = 4
 num_stims = 6
 trials_per_stim = 10 # Number times stim on left out of 20 trials.
@@ -109,7 +109,7 @@ pk['experiment_parameters'].update({'num_blocks': num_blocks})
 pk['experiment_parameters'].update({'num_stims': num_stims})
 pk['experiment_parameters'].update({'trials_per_stim': trials_per_stim})
 
-
+# List of paths to images
 pic_list = [os.path.join(stimpath,'1.bmp'), os.path.join(stimpath,'2.bmp'), os.path.join(stimpath,'3.bmp'), os.path.join(stimpath,'4.bmp'), os.path.join(stimpath,'5.bmp'), os.path.join(stimpath,'6.bmp')]
 
 #Make master list of stim lists.
@@ -120,13 +120,7 @@ small_blocks = block_it(AB_trialList, CD_trialList, EF_trialList)
 #Shuffle bitmaps so images used as stims A, B, C, etc. vary across subjects.
 stim_rand = stim_mapping(pic_list, datapath, info['participant'])
 
-
-#
-
-
-
-##Start the study.
-
+# Text
 inst_text = [
 'This is a new game, with\nchances to win more money.\n\nPress button 1 to advance.', 
 'Two figures will appear\non the computer screen.\n\nOne figure will pay you more often\nthan the other, but at first you won\'t\nknow which figure is the good one.\n\nPress 1 to advance.', 
@@ -140,8 +134,6 @@ adillyofapickle(datapath, pk, info['participant'])
 
 # Introduction    
 intro(inst_text, instruct, win, allKeys, left_key, quit_key)
-RT = core.Clock()
-task_clock = core.Clock()
 stim_matrix = starter(small_blocks, stim_rand, win)
 last_text = ['Ready to begin, press o when you are comfortable']
 advance = 'false'
@@ -150,15 +142,15 @@ k = ['']
 #Run experimental trials.
 for block_num, block in enumerate(range(num_blocks)):    
     while advance == 'false':
-        pk.update({'data':{'%i'%block_num:{}
-        }
-        })
+        pk.update({'data':{'%i'%block_num:{}}})
         instruct.setText(text=last_text[0])
         instruct.draw()
         win.flip()
         k = event.waitKeys()
 
         if k[0] == 'o':
+            RT = core.Clock() # begin the reaction time clock
+            task_clock = core.Clock() #begin the task clock
             advance = 'true'
 
         elif k[0] == 'q':
@@ -207,13 +199,13 @@ for block_num, block in enumerate(range(num_blocks)):
         
         pk['data']['%i'%block_num]['%i'%trial_num].append(R) # reward or not
         pk['data']['%i'%block_num]['%i'%trial_num].append(fdbk_onset) # feedback onset
-
+        # wait 3 seconds, update with dispense time when we have it
         core.wait(3.0)
         # pickle dump
         adillyofapickle(datapath, pk, info['participant'])
         
         # check what trial it is
-        if trial_num == 60:
+        if trial_num == total_trials:
             adillyofapickle(datapath, pk, info['participant'])
 
     #Present a screen between blocks.

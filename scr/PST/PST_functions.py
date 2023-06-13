@@ -230,7 +230,7 @@ def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, X):
 
 
 
-def starter(small_blocks, stim_rand, win):
+def starter(small_blocks, stim_rand, win, trials_per_stim):
     from psychopy import visual
     for i in range(len(small_blocks)): #Randomize each small block (scramble AB,CD,EF trios).
         np.random.shuffle(small_blocks[i])
@@ -244,7 +244,7 @@ def starter(small_blocks, stim_rand, win):
     rightStims = []
     right_stim_numbers = []
     sch_outcome = []
-    for x in range(20):
+    for x in range(trials_per_stim*2):
         for y in range(3):
             leftStims.append(AllTrials[x,y,0])
             rightStims.append(AllTrials[x,y,1])
@@ -292,22 +292,19 @@ def intro(inst_text, instruct, win, allKeys, left_key, quit_key):
 def stim_mapping(pic_list, datapath, participantID):
     '''
     this will map the images to the stimuli
-    random person
-    writes a csv file
+    random per person
     '''
     np.random.shuffle(pic_list)
     stim_rand = {'stim_A':pic_list[0], 'stim_C':pic_list[1], 'stim_E':pic_list[2], 'stim_F':pic_list[3], 'stim_D':pic_list[4], 'stim_B':pic_list[5]}
-#    df = pd.DataFrame(stim_rand.items())
-#    df.to_csv(os.path.join(datapath,'%s_PST_stim_rand.csv'%(participantID)), header=False, index=False)
     return(stim_rand)
 
 
-def block_it(AB_trialList, CD_trialList, EF_trialList):
+def block_it(AB_trialList, CD_trialList, EF_trialList, trials_per_stim):
     '''
     This concatonates all the of trialLists into a large list
     '''
-    small_blocks = [[i] for i in range(20)]
-    for i in range(20):
+    small_blocks = [[i] for i in range(trials_per_stim*2)]
+    for i in range(trials_per_stim*2):
         small_blocks[i] = np.vstack([AB_trialList[i],CD_trialList[i],EF_trialList[i]])
     return(small_blocks)
 
@@ -323,7 +320,6 @@ def stimulating(num_stims, trials_per_stim):
     for count,x in enumerate(range(num_stims)):
         count = count+1
         stim_list[x] = [count for y in range(trials_per_stim)]
-    
     stim_names = {}
     for i,x in enumerate(stim_list):
         stim_names[letters[i]] = x
