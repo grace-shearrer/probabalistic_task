@@ -7,23 +7,79 @@ import numpy as np
 import pandas as pd
 from psychopy import core, data, event, gui, misc, sound, visual
 import serial
-import pdb 
+import pickle
+import datetime
+
+datefmt='%m-%d-%Y_%I-%M-%S'
+
+def adillyofapickle(basepath, dic, name):
+    # st = datetime.fromtimestamp(time()).strftime(datefmt)
+    if os.path.exists(os.path.join(basepath,'%s'%name)):
+        print('already have %s'%name)
+    else:
+        os.makedirs(os.path.join(basepath,'%s'%name))
+    pickle.dump(dic, open(os.path.join(basepath,'%s'%name,'%s'%(name)), 'wb'), protocol=4)
+'''
+All about the pickles
+Each pickle file should be all the data needed to recreate any of the runs including all answers
+The data key is formated to import into pandas with each block as a dataframe
+example_datat = pk[participant_ID]['data'][block]
+
+df = pd.DataFrame.from_dict(example_data, orient='index',
+                       columns=['trial_number', 'left_stim_name', 'left_stim_number', 'right_stim_name','right_stim_number','onset','response','trial_feedback','reward','RT'])
+df['block']= block_num
+
+
+pk = {
+    info['particpant']:{ 
+        'date': info['date'],
+        'fullscr':info['fullscr'], 
+        'test?':info['test'], 
+        'experiment_parameters':{
+            'num_blocks':num_blocks,
+            'num_stims':num_stims,
+            'trials_per_stim':trials_per_stim, 
+            'win':win, 
+            'left':left_choice,
+            'right':right_choice,
+            'small_blocks':small_blocks,
+            'picture_map': stim_rand,
+            'stim_mat':stim_matrix
+            }, 
+        'data':{
+            block:{
+                trial_num:[left_stim_name, 
+                left_stim_number, 
+                right_stim_name, 
+                right_stim_number, 
+                onset, 
+                response, 
+                trail_feedback, 
+                reward, 
+                RT]
+                }
+            }
+        }
+    }
+}
+'''
+
+def check_quit(check_key, basepath, dic, name):
+    if len(check_key)>0:
+        if check_key[0] == 'q':
+            adillyofapickle(basepath, dic, name)
+            core.quit()
 
 def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome):
-    from psychopy import event
+    # from psychopy import event
     left_stim.draw()
     right_stim.draw()
     win.flip()
     # wait for key press
     key_press = event.waitKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-    # allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-    # print(key_press)
-    fix.draw()
-    win.flip()
     return(key_press)
 
-def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_choice, task_clock): 
-    print(key_pressed)   
+def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_choice, task_clock):  
     resp_onset = task_clock.getTime()
     if key_pressed == '1':
         left_choice.draw()
@@ -36,8 +92,6 @@ def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_
         right_stim.draw()
         win.flip()
         
-
-
 
 def drawing(left_stim, right_stim, fix, left_choice, right_choice, win):
     left_stim.draw()
