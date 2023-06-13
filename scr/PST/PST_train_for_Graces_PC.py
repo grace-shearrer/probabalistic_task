@@ -17,7 +17,10 @@ from psychopy import core, data, event, gui, misc, sound, visual
 import serial
 from PST_functions import *
 from PST_setup import *
+import dill
+import sys
 
+sys.path.append('/Users/gracer/opt/anaconda3/lib/python3.8/site-packages')
 # don't forget to check the port in device manager (associated with cp210 driver)
 # ser = serial.Serial('COM4', 9800)
 
@@ -53,7 +56,12 @@ if dlg.OK:
 else:
     core.quit()
 #/Users/gracer/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofWyoming/M2AENAD Lab - Documents/RESEARCH/GRRL/PST
-pk = info
+pk = {}
+pk.update({info['participant']:{
+        'date': info['dateStr'],
+        'fullscr':info['fullscr'], 
+        'test?':info['test?']
+}})
 
 stimpath = './Stims/'
 datapath = os.path.join('.','Datapath')
@@ -68,6 +76,9 @@ quit_key = 'q'
 fdbk_dur = 5
 
 parameters = set_visuals([600,400], False, 'MacAir', 'black', wintype, 'Text', 'center', 0.12, 350, 'white', 0.3, stimpath)
+pk.update({'experiment_parameters':{}})
+
+
 win = parameters['win']
 instruct = parameters['instruct']
 left_choice = parameters['left_choice']
@@ -80,6 +91,12 @@ num_blocks = 4
 num_stims = 6
 trials_per_stim = 10 # Number times stim on left out of 20 trials.
 total_trials = trials_per_stim*num_stims
+
+pk['experiment_parameters'].update({'settings': ['600','400','False','MacAir','black','pyglet','Text','center','0.12','350','white','0.3']})
+pk['experiment_parameters'].update({'num_blocks': num_blocks})
+pk['experiment_parameters'].update({'num_stims': num_stims})
+pk['experiment_parameters'].update({'trials_per_stim': trials_per_stim})
+
 
 pic_list = [os.path.join(stimpath,'1.bmp'), os.path.join(stimpath,'2.bmp'), os.path.join(stimpath,'3.bmp'), os.path.join(stimpath,'4.bmp'), os.path.join(stimpath,'5.bmp'), os.path.join(stimpath,'6.bmp')]
 
@@ -99,10 +116,7 @@ small_blocks = block_it(AB_trialList, CD_trialList, EF_trialList)
 #stim_rand = {'stim_A':pic_list[0], 'stim_C':pic_list[1], 'stim_E':pic_list[2], 'stim_F':pic_list[3], 'stim_D':pic_list[4], 'stim_B':pic_list[5]}
 stim_rand = stim_mapping(pic_list, datapath, info['participant'])
 
-parameters.update({'num_blocks':num_blocks,'num_stims':num_stims, 'trials_per_stim':trials_per_stim, 'stim_names':stim_names, 'small_blocks':small_blocks, 'stim_rand':stim_rand})
-pk.update({'experiment_parameters':parameters})
-
-#Clocks.
+#parameters.update({'num_blocks':num_blocks,'num_stims':num_stims, 'trials_per_stim':trials_per_stim, 'stim_names':stim_names, 'small_blocks':small_blocks, 'stim_rand':stim_rand})
 
 RT = core.Clock()
 task_clock = core.Clock()
@@ -120,6 +134,7 @@ inst_text = [
 'There are 4 blocks of trials.\nEach one lasts about 8 minutes.\n\nMake sure to try all the figures\nso you can learn which ones\nare better and worse.\n\nPress button 1 to advance.']
 
 allKeys = []
+adillyofapickle(datapath, pk, info['participant'])
 
 # Introduction    
 intro(inst_text, instruct, win, allKeys, left_key, quit_key)
@@ -135,6 +150,9 @@ for block_num, block in enumerate(range(num_blocks)):
     k = ['']
 
     while advance == 'false':
+        pk.update({'data':{'%i'%block_num:{}
+        }
+        })
         instruct.setText(text=last_text[0])
         instruct.draw()
         win.flip()
@@ -173,17 +191,27 @@ for block_num, block in enumerate(range(num_blocks)):
 
 
         #Reset the RT clock. 
-        check_key = event.getKeys(keyList=[quit_key],  timeStamped=task_clock)
-        print(check_key)
-        check_quit(check_key, datapath, pk, info['participant'])
+#        print(pk)
         RT.reset()
         event.clearEvents(eventType='keyboard')
-        key_press = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome)
+        key_press = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome, datapath, pk, info['participant'])
         acc = accuracy(left_stim_num, right_stim_num, key_press[0][0])
-        response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock)
+        response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock, datapath, pk, info['participant'])
         core.wait(2.0)
         show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'])
-        core.wait(3.0)
+        while core.wait(3.0):
+            pk['data']['%i'%block_num].update({
+                '%i'%trial_num:
+                    [left_stim_name, 
+                    left_stim_number, 
+                    right_stim_name, 
+                    right_stim_number, 
+                    onset, 
+                    response, 
+                    trail_feedback,
+                    reward,
+                    RT]
+            })
 
         #Write out the data.
 

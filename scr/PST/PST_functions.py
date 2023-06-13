@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from psychopy import core, data, event, gui, misc, sound, visual
 import serial
+import dill
 import pickle
 import datetime
 
@@ -18,7 +19,16 @@ def adillyofapickle(basepath, dic, name):
         print('already have %s'%name)
     else:
         os.makedirs(os.path.join(basepath,'%s'%name))
-    pickle.dump(dic, open(os.path.join(basepath,'%s'%name,'%s'%(name)), 'wb'), protocol=4)
+    with open(os.path.join(basepath,'%s'%name,'%s'%name), "wb") as dill_file:
+        dill.dump(dic, dill_file)
+
+
+def clean_quit(basepath, dic, name, task_clock):
+    dic.update({'quit':task_clock.getTime()})
+    adillyofapickle(basepath, dic, name)
+    print(dic)
+    core.quit()
+    
 '''
 All about the pickles
 Each pickle file should be all the data needed to recreate any of the runs including all answers
@@ -64,22 +74,20 @@ pk = {
 }
 '''
 
-def check_quit(check_key, basepath, dic, name):
-    if len(check_key)>0:
-        if check_key[0] == 'q':
-            adillyofapickle(basepath, dic, name)
-            core.quit()
 
-def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome):
+        
+def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome,basepath, dic, name):
     # from psychopy import event
     left_stim.draw()
     right_stim.draw()
     win.flip()
     # wait for key press
     key_press = event.waitKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
+    if key_press == 'q':
+        clean_quit(basepath, dic, name, task_clock)
     return(key_press)
 
-def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_choice, task_clock):  
+def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_choice, task_clock, basepath, dic, name):  
     resp_onset = task_clock.getTime()
     if key_pressed == '1':
         left_choice.draw()
@@ -91,6 +99,9 @@ def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_
         left_stim.draw()
         right_stim.draw()
         win.flip()
+    if key_pressed == 'q':
+        clean_quit(basepath, dic, name, task_clock)
+    
         
 
 def drawing(left_stim, right_stim, fix, left_choice, right_choice, win):
