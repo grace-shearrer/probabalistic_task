@@ -1,13 +1,11 @@
 #!/usr/bin/python
 
-#fMRI PST training script.
-#Last Updated: Sep 8, 2022
-#Last updated by Yana Oct 6
+#PST training script.
+#Last Updated: Jun 13, 2023
 #Original Author: Dan Dillon
 #Updated by: G Shearrer and Y Akmadjonova
 #for the serial library, download pyserial (not serial)
 #ports differ on different pc-s
-#datapath may need updating on another pc
 
 import os
 from math import floor
@@ -17,10 +15,8 @@ from psychopy import core, data, event, gui, misc, sound, visual
 import serial
 from PST_functions import *
 from PST_setup import *
-import dill
-import sys
 
-sys.path.append('/Users/gracer/opt/anaconda3/lib/python3.8/site-packages')
+
 # don't forget to check the port in device manager (associated with cp210 driver)
 # ser = serial.Serial('COM4', 9800)
 
@@ -51,11 +47,11 @@ info['dateStr'] = data.getDateStr()
 
 dlg = gui.DlgFromDict(info)
 
-if dlg.OK:
-    misc.toFile('PST_fMRI_lastParams.pickle', info) 
-else:
-    core.quit()
-#/Users/gracer/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofWyoming/M2AENAD Lab - Documents/RESEARCH/GRRL/PST
+#if dlg.OK:
+#    misc.toFile('PST_fMRI_lastParams.pickle', info) 
+#else:
+#    core.quit()
+
 pk = {}
 pk.update({info['participant']:{
         'date': info['dateStr'],
@@ -100,24 +96,16 @@ pk['experiment_parameters'].update({'trials_per_stim': trials_per_stim})
 
 pic_list = [os.path.join(stimpath,'1.bmp'), os.path.join(stimpath,'2.bmp'), os.path.join(stimpath,'3.bmp'), os.path.join(stimpath,'4.bmp'), os.path.join(stimpath,'5.bmp'), os.path.join(stimpath,'6.bmp')]
 
-
-
-#train_file = os.path.join(datapath, '%s_%s_PST_fMRI_train.csv'%(info['participant'], info['dateStr']))
-#trainFile = open(train_file, 'w')
-#trainFile.write('block,trial_num,left_stim,left_stim_number,right_stim,right_stim_number,object_onset,object_duration,response,response_onset,trial_RT,accuracy,isi_onset,isi_duration,scheduled_outcome,feedback,feedback_onset,feedback_duration,iti_onset,iti_duration\n')
-#
-
 #Make master list of stim lists.
 stim_names = stimulating(num_stims, trials_per_stim)
 AB_trialList, CD_trialList, EF_trialList = make_it(stim_names)
 small_blocks = block_it(AB_trialList, CD_trialList, EF_trialList)
 
 #Shuffle bitmaps so images used as stims A, B, C, etc. vary across subjects.
-#stim_rand = {'stim_A':pic_list[0], 'stim_C':pic_list[1], 'stim_E':pic_list[2], 'stim_F':pic_list[3], 'stim_D':pic_list[4], 'stim_B':pic_list[5]}
 stim_rand = stim_mapping(pic_list, datapath, info['participant'])
 
-#parameters.update({'num_blocks':num_blocks,'num_stims':num_stims, 'trials_per_stim':trials_per_stim, 'stim_names':stim_names, 'small_blocks':small_blocks, 'stim_rand':stim_rand})
 
+#
 RT = core.Clock()
 task_clock = core.Clock()
 
@@ -171,13 +159,7 @@ for block_num, block in enumerate(range(num_blocks)):
     for i in range(total_trials):
 
         trial_num = i + 1
-
-        #Clear buffers.
-
-        event.clearEvents()
-        allKeys=[]
-        resp=[]
-        trial_RT=[]
+        pk['data']['%i'%block_num].update({'%i'%trial_num:[]})
 
         #Prep the stims.
 
@@ -188,43 +170,31 @@ for block_num, block in enumerate(range(num_blocks)):
         right_stim_name = stim_matrix[trial_num-1][4]
         right_stim_num = stim_matrix[trial_num-1][5]
         scheduled_outcome = stim_matrix[trial_num-1][6]
-
-
-        #Reset the RT clock. 
-#        print(pk)
+        for x in [left_stim_name, left_stim_num, right_stim_name, right_stim_num, scheduled_outcome]:
+            pk['data']['%i'%block_num]['%i'%trial_num].append(x)
+        
+        #Reset the RT clock and clear events
         RT.reset()
         event.clearEvents(eventType='keyboard')
-        key_press = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome, datapath, pk, info['participant'])
+        
+        key_press, stim_onset = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome)
+        pk['data']['%i'%block_num]['%i'%trial_num].append(stim_onset) # stimulus onset
+        pk['data']['%i'%block_num]['%i'%trial_num].append(key_press[0][0]) # keypress
+        pk['data']['%i'%block_num]['%i'%trial_num].append(key_press[0][1]) # RT
         acc = accuracy(left_stim_num, right_stim_num, key_press[0][0])
+        pk['data']['%i'%block_num]['%i'%trial_num].append(acc) # accuracy
         response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock, datapath, pk, info['participant'])
         core.wait(2.0)
-        show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'])
-        while core.wait(3.0):
-            pk['data']['%i'%block_num].update({
-                '%i'%trial_num:
-                    [left_stim_name, 
-                    left_stim_number, 
-                    right_stim_name, 
-                    right_stim_number, 
-                    onset, 
-                    response, 
-                    trail_feedback,
-                    reward,
-                    RT]
-            })
-
-        #Write out the data.
-
-
-        #Fade out with lastHRF fixation cross after 60 trials.
+        R, fdbk_onset = show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'])
+        pk['data']['%i'%block_num]['%i'%trial_num].append(R) # reward or not
+        pk['data']['%i'%block_num]['%i'%trial_num].append(fdbk_onset) # feedback onset
+        core.wait(3.0)
+        adillyofapickle(datapath, pk, info['participant'])
         
-        if trial_num == 60: 
-            elapsed_time = task_clock.getTime()
-            time_left = end_time - elapsed_time
+        if trial_num == 60:
+            adillyofapickle(datapath, pk, info['participant'])
 
-            for i in range(int(round((time_left*1000)/refresh))):
-                fix.draw()
-                win.flip()
+
 
     #Present a screen between blocks.
 
@@ -246,20 +216,12 @@ for block_num, block in enumerate(range(num_blocks)):
 
                 if resp == left_key:
                     advance = 'true'
-                    #advance_sound.play()
                     allKeys = []
 
                 elif resp == quit_key:
-                    core.quit()
+                    clean_quit(datapath, pk, info['participant'], task_clock)
 
-   
-
-#Now that we've looped over all the blocks, close the training file.
-
-trainFile.close()
-
-
-
-#Close the rating file.
-
-PST_Rate_Data_File.close()
+# create a dataframe and save   
+df = make_df(pk)
+savepath = os.path.join(datapath,'%s'%info['participant'],'%s.csv'%info['participant'])
+df.to_csv(savepath, index=False)

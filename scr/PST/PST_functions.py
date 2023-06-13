@@ -28,7 +28,15 @@ def clean_quit(basepath, dic, name, task_clock):
     adillyofapickle(basepath, dic, name)
     print(dic)
     core.quit()
-    
+
+def onetoughjar(path2dic):
+    with open(path2dic, 'rb') as pickle_file:
+        try:
+            while True:
+                output = pickle.load(pickle_file)
+        except EOFError:
+            pass
+    return(output)    
 '''
 All about the pickles
 Each pickle file should be all the data needed to recreate any of the runs including all answers
@@ -58,15 +66,19 @@ pk = {
             }, 
         'data':{
             block:{
-                trial_num:[left_stim_name, 
-                left_stim_number, 
-                right_stim_name, 
-                right_stim_number, 
-                onset, 
-                response, 
-                trail_feedback, 
-                reward, 
-                RT]
+                trial_num:[
+                    left_stim_name, 
+                    left_stim_number, 
+                    right_stim_name, 
+                    right_stim_number, 
+                    shceduled_outcome,
+                    stim_onset,
+                    key_press,
+                    RT,
+                    accuracy,
+                    reward_outcome,
+                    feedback_onset
+                  ]
                 }
             }
         }
@@ -74,18 +86,34 @@ pk = {
 }
 '''
 
+def make_df(dic):
+    all_df = []
+    for key,value in dic['data'].items():
+        df = pd.DataFrame.from_dict(value, orient='index',
+                        columns=['left_stim_name', 
+                        'left_stim_number', 
+                        'right_stim_name', 
+                        'right_stim_number', 
+                        'shceduled_outcome',
+                        'stim_onset',
+                        'key_press',
+                        'RT',
+                        'accuracy',
+                        'reward_outcome',
+                        'feedback_onset'])
+        df['block']= key
+        all_df.append(df)
+    DF = pd.concat(all_df, axis=0)
+    return(DF)
 
         
-def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome,basepath, dic, name):
-    # from psychopy import event
+def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome):
+    stim_onset = task_clock.getTime()
     left_stim.draw()
     right_stim.draw()
     win.flip()
-    # wait for key press
-    key_press = event.waitKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-    if key_press == 'q':
-        clean_quit(basepath, dic, name, task_clock)
-    return(key_press)
+    key_press = event.waitKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)# wait for key press
+    return(key_press, stim_onset)
 
 def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_choice, task_clock, basepath, dic, name):  
     resp_onset = task_clock.getTime()
@@ -151,15 +179,15 @@ def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, X):
     elif accuracy == 1 and sched_out == 0:
         zero.draw()
         win.flip()
-        return ('zero')
+        return ('correct_unrewarded', fdbk_onset)
     elif accuracy == 0 and sched_out == 1:
         zero.draw()
         win.flip()
-        return ('zero',fdbk_onset)
+        return ('incorrect',fdbk_onset)
     elif accuracy == 0 and sched_out == 0:
         reward.draw()
         win.flip()
-        return ('prob_reward', fdbk_onset)
+        return ('probabalistic_reward', fdbk_onset)
 
 
 
