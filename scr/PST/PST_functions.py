@@ -69,63 +69,31 @@ def show_resp(key_pressed, left_choice, right_choice, task_clock):
     return(resp_onset)
     
 
-def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, test, fdbk_dur):
+def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, X):
 
     fdbk_onset = task_clock.getTime()
 
     if accuracy == 1 and sched_out == 1:
         reward.draw()
-        core.wait(fdbk_dur)
-        if test == false:
+        if X == False:
             ser.write(52)
+            cc=str(ser.readline())
         else:
             print('dispensing candy')
-
-        # for frames in range(stupid_math(refresh)):
-        #     reward.draw()
-        #     if test == False:
-        #         ser.write(52)
-        #     else:
-        #         print('neat')
-            cc=str(ser.readline())
-            ser.write(52)
             win.flip()
-        
-        # fdbk_dur = fdbk_clock.getTime()
-
         return ('correct_reward', fdbk_onset)
 
     elif accuracy == 1 and sched_out == 0:
-
         zero.draw()
         win.flip()
-    
-        
         return ('zero')
-
     elif accuracy == 0 and sched_out == 1:
         zero.draw()
         win.flip()
-
-        #incorr_sound.play()
-        # for frames in range(stupid_math(refresh)):
-        #     zero.draw()
-        #     win.flip()
-
-        # fdbk_dur = fdbk_clock.getTime()
-
         return ('zero',fdbk_onset)
-
     elif accuracy == 0 and sched_out == 0:
         reward.draw()
         win.flip()
-        #corr_sound.play()
-        # for frames in range(stupid_math(refresh)):
-        #     reward.draw()
-        #     win.flip()
-
-        # fdbk_dur = fdbk_clock.getTime()
-
         return ('prob_reward', fdbk_onset)
 
 
@@ -284,70 +252,6 @@ def check_rand (in_array,num_array,num_row): #Cannot have more than 6 consecutiv
 
    
 
-def show_fdbk(accuracy,sched_out,start_time,measured_refresh, no_resp, zero, win, reward, test):
-
-    refresh = measured_refresh
-    fdbk_clock = core.Clock()
-    fdbk_clock.reset()
-    fdbk_onset = start_time
-
-    if accuracy == 1 and sched_out == 1:
-        for frames in range(stupid_math(refresh)):
-            reward.draw()
-            if test == False:
-                ser.write(52)
-            else:
-                print('neat')
-            cc=str(ser.readline())
-            ser.write(52)
-            win.flip()
-        
-        fdbk_dur = fdbk_clock.getTime()
-
-        return ('reward',fdbk_onset,fdbk_dur)
-
-    elif accuracy == 1 and sched_out == 0:
-
-        #incorr_sound.play()
-        for frames in range(stupid_math(refresh)):
-            zero.draw()
-            win.flip()
-
-        fdbk_dur = fdbk_clock.getTime()
-
-        return ('zero',fdbk_onset,fdbk_dur)
-
-    elif accuracy == 0 and sched_out == 1:
-
-        #incorr_sound.play()
-        for frames in range(stupid_math(refresh)):
-            zero.draw()
-            win.flip()
-
-        fdbk_dur = fdbk_clock.getTime()
-
-        return ('zero',fdbk_onset,fdbk_dur)
-
-    elif accuracy == 0 and sched_out == 0:
-        
-        #corr_sound.play()
-        for frames in range(stupid_math(refresh)):
-            reward.draw()
-            win.flip()
-
-        fdbk_dur = fdbk_clock.getTime()
-
-        return ('reward',fdbk_onset,fdbk_dur)
-
-    elif accuracy == 999:
-
-        for frames in range(stupid_math(refresh)):
-            no_resp.draw()
-            win.flip()
-
-        fdbk_dur = fdbk_clock.getTime()
-
-        return ('no_response',fdbk_onset,fdbk_dur)
 
 def show_fix(duration,start_time,measured_refresh, fix, win):
 

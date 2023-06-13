@@ -230,73 +230,12 @@ for block_num, block in enumerate(range(num_blocks)):
         response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock)
         core.wait(2.0)
 #        show_fdbk(acc,scheduled_outcome,task_clock, zero, win, reward, test, fdbk_dur)
-        show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'], 3.0)
+        show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'])
+        core.wait(3.0)
         
         
 
-#Set-up desired trial dur (excluding ITI). 
 
-#        targ_trial_dur = stim_dur + (isi_dur * refresh)/1000 + fdbk_dur
-
-        #Draw the stims and handle keyboard input.
-        
-#        object_onset = task_clock.getTime()
-#        allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-#        fix.draw()
-#        win.flip()
-#        while stim_frameN < int(floor(3000/refresh)):
-#            response = 'false'
-#            left_stim.draw()
-#            right_stim.draw()
-#            fix.draw()
-#            win.flip()
-#            allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-
-#            if allKeys:
-#                resp = allKeys[0][0]
-#                trial_RT=allKeys[0][1]
-#                #advance_sound.play()
-#
-#                if resp == quit_key:
-#                    core.quit()
-#
-#                elif resp == left_key:
-#                    response = 'left'
-#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-#                    isi = show_fix(isi_dur,task_clock.getTime(),refresh, fix, win)
-#                    object_dur = isi[0] - object_onset
-#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-#                    act_trial_dur = object_dur + isi[1] + feedback[2]
-#                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-#                    iti = show_fix(iti_dur,task_clock.getTime(),refresh, fix, win)
-#                    stim_frameN = int(floor(3000/refresh))
-#
-#                elif resp == right_key:
-#                    response = 'right'
-#                    trial_response = show_resp(response,left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-#                    isi = show_fix(isi_dur,task_clock.getTime(),refresh, fix, win)
-#                    object_dur = isi[0] - object_onset
-#                    feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-#                    act_trial_dur = object_dur + isi[1] + feedback[2]
-#                    iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-#                    iti = show_fix(iti_dur,task_clock.getTime(),refresh, fix, win)
-#                    stim_frameN = int(floor(3000/refresh))
-#            
-#            stim_frameN = stim_frameN + 1
-
-        #Catch trials with no response.
-
-        if stim_frameN == int(floor(3000/refresh)) and response == 'false':
-            response = 'No_response'
-            trial_RT = 999
-            accuracy = 999
-            isi = show_fix(isi_dur,task_clock.getTime(),refresh, fix, win)
-            object_dur = isi[0] - object_onset
-            trial_response = (999,999.0)
-            feedback = show_fdbk(accuracy,scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-            act_trial_dur = object_dur + isi[1] + feedback[2]
-            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-            iti = show_fix(iti_dur,task_clock.getTime(),refresh, fix, win)
 
         #Write out the data.
 
