@@ -210,10 +210,10 @@ for block_num, block in enumerate(range(num_blocks)):
 
         left_stim = stim_matrix[trial_num-1][0]
         left_stim_name = stim_matrix[trial_num-1][1]
-        left_stim_number = stim_matrix[trial_num-1][2]
+        left_stim_num = stim_matrix[trial_num-1][2]
         right_stim = stim_matrix[trial_num-1][3]
         right_stim_name = stim_matrix[trial_num-1][4]
-        right_stim_number = stim_matrix[trial_num-1][5]
+        right_stim_num = stim_matrix[trial_num-1][5]
         scheduled_outcome = stim_matrix[trial_num-1][6]
 
         #Set ISI/ITI durs.
@@ -226,10 +226,15 @@ for block_num, block in enumerate(range(num_blocks)):
         RT.reset()
         event.clearEvents(eventType='keyboard')
         key_press = present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, RT, task_clock, scheduled_outcome)
-#        print(key_press[0])
+        acc = accuracy(left_stim_num, right_stim_num, key_press[0][0])
         response_update(key_press[0][0],win, left_stim, right_stim, left_choice, right_choice, task_clock)
         core.wait(2.0)
-        #Set-up desired trial dur (excluding ITI). 
+#        show_fdbk(acc,scheduled_outcome,task_clock, zero, win, reward, test, fdbk_dur)
+        show_fdbk(acc, scheduled_outcome, task_clock, zero, win, reward, info['test?'], 3.0)
+        
+        
+
+#Set-up desired trial dur (excluding ITI). 
 
 #        targ_trial_dur = stim_dur + (isi_dur * refresh)/1000 + fdbk_dur
 

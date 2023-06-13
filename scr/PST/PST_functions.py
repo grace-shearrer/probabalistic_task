@@ -17,7 +17,7 @@ def present_stims(fix,left_stim, right_stim, win, left_key,right_key,quit_key, R
     # wait for key press
     key_press = event.waitKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
     # allKeys=event.getKeys(keyList = [left_key,right_key,quit_key], timeStamped=RT)
-    print(key_press)
+    # print(key_press)
     fix.draw()
     win.flip()
     return(key_press)
@@ -30,31 +30,12 @@ def response_update(key_pressed, win, left_stim, right_stim, left_choice, right_
         left_stim.draw()
         right_stim.draw()
         win.flip()
-        # trial_response = show_resp(key_pressed[0][0],left_choice, right_choice, task_clock)
-       
-        # isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
-        # object_dur = isi[0] - object_onset
-        # feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(), no_resp, zero, win, reward, info['test?'])
-        
-    #            act_trial_dur = object_dur + isi[1] + feedback[2]
-    #            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-    #            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
-    #            stim_frameN = int(floor(3000/refresh))
-
     elif key_pressed == '4':
         right_choice.draw()
         left_stim.draw()
         right_stim.draw()
         win.flip()
-        # trial_response = show_resp(key_pressed[0][0],left_stim_number,right_stim_number,stim_frameN,refresh,task_clock.getTime(), left_stim, right_stim, fix, win, left_choice, right_choice)
-        # isi = show_fix(isi_dur,fMRI_clock.getTime(),refresh, fix, win)
-        # object_dur = isi[0] - object_onset
-        # feedback = show_fdbk(trial_response[0],scheduled_outcome,task_clock.getTime(),refresh, no_resp, zero,win, reward, info['test?'])
-    #            act_trial_dur = object_dur + isi[1] + feedback[2]
-    #            iti_dur = iti_dur + int(round(((targ_trial_dur - act_trial_dur)*1000)/refresh))
-    #            iti = show_fix(iti_dur,fMRI_clock.getTime(),refresh, fix, win)
-    #            stim_frameN = int(floor(3000/refresh))
-
+        
 
 
 
@@ -64,10 +45,11 @@ def drawing(left_stim, right_stim, fix, left_choice, right_choice, win):
     fix.draw()
     win.flip()
 
-def accuracy(l_stim_num , r_stim_num):
+def accuracy(l_stim_num , r_stim_num, choice):
+    # print(l_stim_num)
+    # print(r_stim_num)
     if l_stim_num < r_stim_num: 
-            accuracy = 1
-            
+            accuracy = 1        
     else: 
         accuracy = 0
     if l_stim_num > r_stim_num: 
@@ -87,12 +69,8 @@ def show_resp(key_pressed, left_choice, right_choice, task_clock):
     return(resp_onset)
     
 
-def show_fdbk(accuracy,sched_out,start_time, no_resp, zero, win, reward, test, task_clock, fdbk_dur):
+def show_fdbk(accuracy,sched_out,task_clock, zero, win, reward, test, fdbk_dur):
 
-    # refresh = measured_refresh
-    # fdbk_clock = task_clock.Clock()
-    # fdbk_clock.reset()
-    # fdbk_onset = start_time
     fdbk_onset = task_clock.getTime()
 
     if accuracy == 1 and sched_out == 1:
@@ -115,13 +93,13 @@ def show_fdbk(accuracy,sched_out,start_time, no_resp, zero, win, reward, test, t
         
         # fdbk_dur = fdbk_clock.getTime()
 
-        return ('reward')
+        return ('correct_reward', fdbk_onset)
 
     elif accuracy == 1 and sched_out == 0:
 
         zero.draw()
         win.flip()
-        core.wait(fdbk_dur)
+    
         
         return ('zero')
 
@@ -136,7 +114,7 @@ def show_fdbk(accuracy,sched_out,start_time, no_resp, zero, win, reward, test, t
 
         # fdbk_dur = fdbk_clock.getTime()
 
-        return ('zero',fdbk_onset,fdbk_dur)
+        return ('zero',fdbk_onset)
 
     elif accuracy == 0 and sched_out == 0:
         reward.draw()
@@ -148,23 +126,9 @@ def show_fdbk(accuracy,sched_out,start_time, no_resp, zero, win, reward, test, t
 
         # fdbk_dur = fdbk_clock.getTime()
 
-        return ('reward')
-
-    elif accuracy == 999:
-        no_resp.draw()
-        win.flip()
-
-        # for frames in range(stupid_math(refresh)):
-        #     no_resp.draw()
-        #     win.flip()
-
-        # fdbk_dur = fdbk_clock.getTime()
-
-        return ('no_response')
+        return ('prob_reward', fdbk_onset)
 
 
-
- 
 
 def starter(small_blocks, stim_rand, win):
     from psychopy import visual
@@ -194,23 +158,13 @@ def starter(small_blocks, stim_rand, win):
     #Load the stims in a matrix to improve timing/efficiency.
     stim_matrix = {}
     for i in range(len(leftStims2)): 
-        # print(leftStims)
-        # print(leftStims2)
-        # print(leftStims[i])
         left_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [-0.4,0], image=leftStims2[i])
-        # print('hi1')
         left_stim_name = leftStims2[i]
-        # print('hi2')
         left_stim_number = left_stim_numbers[i]
-        # print('hi3')
         right_stim = visual.ImageStim(win, units = 'norm', size = [0.5,0.5], pos = [0.4,0], image=rightStims2[i])
-        # print('hi4')
         right_stim_name = rightStims2[i]
-        # print('hi5')
         right_stim_number = right_stim_numbers[i]
-        # print('hi6')
         scheduled_outcome = sch_outcome[i] 
-        # print('hi7')
         stim_matrix[i] = (left_stim,left_stim_name,left_stim_number,right_stim,right_stim_name,right_stim_number,scheduled_outcome)
     return(stim_matrix)
 
@@ -236,6 +190,11 @@ def intro(inst_text, instruct, win, allKeys, left_key, quit_key):
 
 
 def stim_mapping(pic_list, datapath, participantID):
+    '''
+    this will map the images to the stimuli
+    random person
+    writes a csv file
+    '''
     np.random.shuffle(pic_list)
     stim_rand = {'stim_A':pic_list[0], 'stim_C':pic_list[1], 'stim_E':pic_list[2], 'stim_F':pic_list[3], 'stim_D':pic_list[4], 'stim_B':pic_list[5]}
 #    df = pd.DataFrame(stim_rand.items())
@@ -244,6 +203,9 @@ def stim_mapping(pic_list, datapath, participantID):
 
 
 def block_it(AB_trialList, CD_trialList, EF_trialList):
+    '''
+    This concatonates all the of trialLists into a large list
+    '''
     small_blocks = [[i] for i in range(20)]
     for i in range(20):
         small_blocks[i] = np.vstack([AB_trialList[i],CD_trialList[i],EF_trialList[i]])
@@ -251,18 +213,29 @@ def block_it(AB_trialList, CD_trialList, EF_trialList):
 
 
 def stimulating(num_stims, trials_per_stim):
+    '''
+    this creates a dictionary with the letters mapped to numbers
+    the each letter is a key with a corresponding list of length number of trials per stim
+    ex. {'A' : [1,1,1,1]}
+    '''
     letters = ['A','C','E','F','D','B']
     stim_list = [1 for x in range(num_stims)]
     for count,x in enumerate(range(num_stims)):
         count = count+1
         stim_list[x] = [count for y in range(trials_per_stim)]
-    print(stim_list)
+    # print(stim_list)
     stim_names = {}
     for i,x in enumerate(stim_list):
         stim_names[letters[i]] = x
     return(stim_names)
 
 def make_it(stim_names):
+    '''
+    This makes the 3 trialLists (AB, CD, EF)
+    Each trialList is a list length of 3
+    The first value is the stim name for the left, the second is the stim name for the right, and the final is if it is rewarded or not
+    Ex. [6,1,1] => the left is stimulus B the right is stimulus A if the person chooses B it is rewarded
+    '''
     #Make the reward probability vectors.
     n80 = [1,1,1,1,1,1,1,1,0,0]
     n70 = [1,1,1,1,1,1,1,0,0,0]
